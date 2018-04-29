@@ -1,3 +1,4 @@
 source https://nuget.org/api/v2
 
-nuget Unity.Newtonsoft.Json
+nuget Nancy = 1.4.1
+nuget Nancy.Hosting.Self
