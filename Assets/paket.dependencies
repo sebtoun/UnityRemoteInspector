@@ -1,4 +1,0 @@
-source https://nuget.org/api/v2
-
-nuget Nancy = 1.4.1
-nuget Nancy.Hosting.Self
