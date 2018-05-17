@@ -28,7 +28,7 @@ namespace RemoteInspector
                     return;
                 }
 
-                response.Send( HttpStatusCode.NotFound );
+                response.Send( HttpStatusCode.NotImplemented );
             }
             catch ( Exception exception )
             {
