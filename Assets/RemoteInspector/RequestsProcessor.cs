@@ -67,8 +67,14 @@ namespace RemoteInspector
 
         public static void Send( this HttpListenerResponse response, HttpStatusCode code = HttpStatusCode.OK )
         {
-            PrepareResponse( response, code );
-            response.Close();
+            try
+            {
+                PrepareResponse( response, code );
+            }
+            finally
+            {
+                response.Close();
+            }
         }
 
         public static void Send( this HttpListenerResponse response,
@@ -85,17 +91,23 @@ namespace RemoteInspector
             HttpStatusCode code = HttpStatusCode.OK,
             bool sendChunked = false )
         {
-            if ( sendChunked )
+            try
             {
-                PrepareResponse( response, code, contentType, true );
-            }
-            else
-            {
-                PrepareResponse( response, code, contentType, false, content.LongLength );
-            }
+                if ( sendChunked )
+                {
+                    PrepareResponse( response, code, contentType, true );
+                }
+                else
+                {
+                    PrepareResponse( response, code, contentType, false, content.LongLength );
+                }
 
-            response.OutputStream.Write( content, 0, content.Length );
-            response.Close();
+                response.OutputStream.Write( content, 0, content.Length );
+            }
+            finally
+            {
+                response.Close();
+            }
         }
 
         public static void SendJson( this HttpListenerResponse response, object obj )
@@ -109,38 +121,66 @@ namespace RemoteInspector
                 code: HttpStatusCode.InternalServerError );
         }
 
-        public static void SendFile( this HttpListenerResponse response, string path,
-            string contentType = MimeTypes.Text.Plain, bool sendChunked = false )
+        public static void SendFile( this HttpListenerResponse response, string path, bool sendChunked = false )
         {
-            Debug.Log( "loading file " + path );
+            var contentType = MimeTypes.Text.Plain;
+
+            if ( path.EndsWith( ".html" ) )
+            {
+                contentType = MimeTypes.Text.Html;
+            }
+            else if ( path.EndsWith( ".js" ) )
+            {
+                contentType = MimeTypes.Application.Javascript;
+            }
+            else if ( path.EndsWith( ".css" ) )
+            {
+                contentType = MimeTypes.Text.Css;
+            }
+            else if ( path.EndsWith( ".png" ) )
+            {
+                contentType = MimeTypes.Image.Png;
+            }
+            else if ( path.EndsWith( ".jpg" ) || path.EndsWith( ".jpeg" ) )
+            {
+                contentType = MimeTypes.Image.Jpeg;
+            }
+            else if ( path.EndsWith( ".ico" ) )
+            {
+                contentType = MimeTypes.Image.Icon;
+            }
+
+            SendFile( response, path, contentType, sendChunked );
+        }
+
+        public static void SendFile( this HttpListenerResponse response, string path, string contentType,
+            bool sendChunked = false )
+        {
             if ( contentType.StartsWith( "text/" ) )
             {
-                string contentString = null;
                 try
                 {
-                    contentString = ResourceLoader.GetTextFileContent( path );
+                    var contentString = ResourceLoader.GetTextFileContent( path );
+                    Send( response, contentString, contentType, sendChunked: sendChunked );
                 }
                 catch ( ResourceNotFoundException )
                 {
-                    Debug.Log(  );
+                    Debug.Log( "Resource not found : " + path );
                     Send( response, HttpStatusCode.NotFound );
                 }
-
-                Send( response, contentString, contentType, sendChunked: sendChunked );
             }
             else
             {
-                byte[] contentBinary = null;
                 try
                 {
-                    contentBinary = ResourceLoader.GetBinaryFileContent( path );
+                    var contentBinary = ResourceLoader.GetBinaryFileContent( path );
+                    Send( response, contentBinary, contentType, sendChunked: sendChunked );
                 }
                 catch ( ResourceNotFoundException )
                 {
+                    Debug.Log( "Resource not found : " + path );
                     Send( response, HttpStatusCode.NotFound );
                 }
-
-                Send( response, contentBinary, contentType, sendChunked: sendChunked );
             }
         }
     }

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <link rel="icon" href="favicon.ico" />
+    <title>Unity Remote Inspector</title>
 </head>
 <body>
     <h1>It's alive!</h1>

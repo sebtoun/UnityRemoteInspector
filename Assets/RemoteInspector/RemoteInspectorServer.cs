@@ -22,6 +22,7 @@ namespace RemoteInspector
             _server = new HttpServer( port );
             _server.KeepClean = true;
             _server.ReuseAddress = true;
+            _server.AutoCloseResponse = false;
             _server.OnGet += HandleRequest;
             _server.OnPost += HandleRequest;
         }

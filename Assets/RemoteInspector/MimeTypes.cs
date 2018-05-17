@@ -58,6 +58,7 @@
             public const string SvgXml = "image/svg+xml";
             public const string Tiff = "image/tiff";
             public const string Webp = "image/webp";
+            public const string Icon = "image/x-icon";
         }
 
         public static class Text

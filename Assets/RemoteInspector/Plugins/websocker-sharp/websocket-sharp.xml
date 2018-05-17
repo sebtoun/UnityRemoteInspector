@@ -3324,6 +3324,34 @@
             the WebSocket services provided by the server.
             </value>
         </member>
+        <member name="P:WebSocketSharp.Server.HttpServer.AutoCloseResponse">
+            <summary>
+            Gets or sets a value indicating whether the responses
+            are synchronously closed after the request event handler
+            has returned. If set to <c>false</c>, it is the responsibility to
+            the event handler delegate to call the <see cref="M:WebSocketSharp.Net.HttpListenerResponse.Close"/>
+            method on the response object, otherwise resources may not be properly cleaned. 
+            </summary>
+            <remarks>
+              <para>
+              You should set this property to <c>true</c> if you would
+              like to send response after executing an asynchronous task.
+              </para>
+              <para>
+              The set operation does nothing if the server has already
+              started or it is shutting down.
+              </para>
+            </remarks>
+            <value>
+              <para>
+              <c>true</c> if the server synchronously close the response
+              after the handler delegate has returned; otherwise, <c>false</c>.
+              </para>
+              <para>
+              The default value is <c>true</c>.
+              </para>
+            </value>
+        </member>
         <member name="E:WebSocketSharp.Server.HttpServer.OnConnect">
             <summary>
             Occurs when the server receives an HTTP CONNECT request.
