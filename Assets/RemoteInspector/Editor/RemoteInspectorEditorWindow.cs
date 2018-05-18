@@ -1,4 +1,5 @@
 ﻿using System;
+using RemoteInspector.Server;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ namespace RemoteInspector.Editor
 {
     public class RemoteInspectorEditorWindow : EditorWindow
     {
+        public int ServerPort = 8080;
+
         [ NonSerialized ]
         private RemoteInspectorServer _server;
 
@@ -24,6 +27,10 @@ namespace RemoteInspector.Editor
 
         private void OnGUI()
         {
+            ServerPort = EditorGUILayout.IntField( "Server Port", ServerPort );
+            ServerPort = Mathf.Min( ushort.MaxValue, ServerPort );
+            ServerPort = Mathf.Max( 0, ServerPort );
+
             EditorGUILayout.LabelField( "Server " + ( IsServerRunning ? "is running" : "is not running" ) );
             if ( IsServerRunning )
             {
@@ -56,14 +63,14 @@ namespace RemoteInspector.Editor
             if ( IsServerRunning )
             {
                 StopServer();
-            }            
+            }
         }
 
         private void StartServer()
         {
             if ( _server == null )
             {
-                _server = new RemoteInspectorServer();
+                _server = new RemoteInspectorServer( (ushort) ServerPort );
             }
 
             _server.Start();

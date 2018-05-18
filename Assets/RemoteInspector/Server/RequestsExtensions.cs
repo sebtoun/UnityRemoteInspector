@@ -1,58 +1,11 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using UnityEngine;
 using WebSocketSharp.Net;
 
-namespace RemoteInspector
+namespace RemoteInspector.Server
 {
-    public class RequestsProcessor
-    {
-        public void ProcessRequest( HttpListenerRequest request, HttpListenerResponse response )
-        {
-            var method = request.HttpMethod;
-            var path = request.Url.AbsolutePath;
-
-            try
-            {
-                if ( path.StartsWith( "/api/" ) )
-                {
-                    ProcessApiCall( request, response );
-                    return;
-                }
-
-                if ( method == "GET" )
-                {
-                    path = "Assets" + path;
-                    UnityMainThreadDispatcher.Instance().Enqueue( () => response.SendFile( path ) );
-                    return;
-                }
-
-                response.Send( HttpStatusCode.NotImplemented );
-            }
-            catch ( Exception exception )
-            {
-                response.SendException( exception );
-                throw;
-            }
-        }
-
-        private void ProcessApiCall( HttpListenerRequest request, HttpListenerResponse response )
-        {
-            foreach ( string header in request.Headers )
-            {
-                Debug.Log( header );
-            }
-
-            Debug.Log( request.ContentLength64 );
-            Debug.Log( new StreamReader( request.InputStream ).ReadToEnd() );
-            response.Send( HttpStatusCode.NotImplemented );
-        }
-    }
-
-    public static class Extensions
+    public static class RequestsExtensions
     {
         private static void PrepareResponse( HttpListenerResponse response, HttpStatusCode code = HttpStatusCode.OK,
             string contentType = null, bool sendChunked = false, long contentLength = 0 )
@@ -86,8 +39,8 @@ namespace RemoteInspector
             }
         }
 
-        public static void Send( this HttpListenerResponse response,
-            string content, string contentType = MimeTypes.Text.Plain, HttpStatusCode code = HttpStatusCode.OK,
+        public static void Send( this HttpListenerResponse response, string content,
+            string contentType = MimeTypes.Text.Plain, HttpStatusCode code = HttpStatusCode.OK,
             bool sendChunked = false )
         {
             var data = Encoding.UTF8.GetBytes( content );
@@ -95,9 +48,8 @@ namespace RemoteInspector
             Send( response, data, contentType, code, sendChunked );
         }
 
-        public static void Send( this HttpListenerResponse response,
-            byte[] content, string contentType = MimeTypes.Application.OctetStream,
-            HttpStatusCode code = HttpStatusCode.OK,
+        public static void Send( this HttpListenerResponse response, byte[] content,
+            string contentType = MimeTypes.Application.OctetStream, HttpStatusCode code = HttpStatusCode.OK,
             bool sendChunked = false )
         {
             try
@@ -130,38 +82,6 @@ namespace RemoteInspector
                 code: HttpStatusCode.InternalServerError );
         }
 
-        public static void SendFile( this HttpListenerResponse response, string path, bool sendChunked = false )
-        {
-            var contentType = MimeTypes.Text.Plain;
-
-            if ( path.EndsWith( ".html" ) )
-            {
-                contentType = MimeTypes.Text.Html;
-            }
-            else if ( path.EndsWith( ".js" ) )
-            {
-                contentType = MimeTypes.Application.Javascript;
-            }
-            else if ( path.EndsWith( ".css" ) )
-            {
-                contentType = MimeTypes.Text.Css;
-            }
-            else if ( path.EndsWith( ".png" ) )
-            {
-                contentType = MimeTypes.Image.Png;
-            }
-            else if ( path.EndsWith( ".jpg" ) || path.EndsWith( ".jpeg" ) )
-            {
-                contentType = MimeTypes.Image.Jpeg;
-            }
-            else if ( path.EndsWith( ".ico" ) )
-            {
-                contentType = MimeTypes.Image.Icon;
-            }
-
-            SendFile( response, path, contentType, sendChunked );
-        }
-
         public static void SendFile( this HttpListenerResponse response, string path, string contentType,
             bool sendChunked = false )
         {
@@ -174,7 +94,7 @@ namespace RemoteInspector
                 }
                 catch ( ResourceNotFoundException )
                 {
-                    Debug.Log( "Resource not found : " + path );
+                    RemoteInspectorServer.LogWarning( "Resource not found : " + path );
                     Send( response, HttpStatusCode.NotFound );
                 }
             }
@@ -187,7 +107,7 @@ namespace RemoteInspector
                 }
                 catch ( ResourceNotFoundException )
                 {
-                    Debug.Log( "Resource not found : " + path );
+                    RemoteInspectorServer.LogWarning( "Resource not found : " + path );
                     Send( response, HttpStatusCode.NotFound );
                 }
             }

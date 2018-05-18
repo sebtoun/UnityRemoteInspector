@@ -2,7 +2,7 @@
 using UnityEngine;
 using WebSocketSharp.Server;
 
-namespace RemoteInspector
+namespace RemoteInspector.Server
 {
     public class RemoteInspectorServer : IDisposable
     {
@@ -22,7 +22,6 @@ namespace RemoteInspector
             _server = new HttpServer( port );
             _server.KeepClean = true;
             _server.ReuseAddress = true;
-            _server.AutoCloseResponse = false;
             _server.OnGet += HandleRequest;
             _server.OnPost += HandleRequest;
         }
@@ -39,7 +38,7 @@ namespace RemoteInspector
             {
                 Log( "Starting Remote Inspector server" );
                 _server.Start();
-                Log( "Remote Inspector server started" );
+                Log( "Remote Inspector server listening on port : " + _server.Port );
             }
             catch ( Exception e )
             {
@@ -92,17 +91,22 @@ namespace RemoteInspector
             }
         }
 
-        private static void Log( string message )
+        public static void Log( string message )
         {
             Debug.Log( LogPrefix + message );
         }
 
-        private static void LogError( string message )
+        public static void LogError( string message )
         {
             Debug.LogError( LogPrefix + message );
         }
 
-        private static void LogException( Exception e )
+        public static void LogWarning( string message )
+        {
+            Debug.LogWarning( LogPrefix + message );
+        }
+
+        public static void LogException( Exception e )
         {
             var disposeExc = e as ObjectDisposedException;
             if ( disposeExc != null && disposeExc.ObjectName == "listener" )

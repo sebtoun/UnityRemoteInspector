@@ -17,6 +17,8 @@ limitations under the License.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using RemoteInspector.Server;
 using UnityEngine;
 
 namespace RemoteInspector
@@ -72,6 +74,20 @@ namespace RemoteInspector
             Enqueue( ActionWrapper( action ) );
         }
 
+        public void EnqueueAndWait( Action action )
+        {
+            using ( var waitHandle = new ManualResetEvent( false ) )
+            {
+                Enqueue( () =>
+                {
+                    action();
+                    // ReSharper disable once AccessToDisposedClosure
+                    waitHandle.Set();
+                } );
+                waitHandle.WaitOne();
+            }
+        }
+
         IEnumerator ActionWrapper( Action a )
         {
             a();
@@ -103,6 +119,13 @@ namespace RemoteInspector
                 _instance = this;
                 DontDestroyOnLoad( this.gameObject );
             }
+        }
+
+        private void OnEnable()
+        {
+            // handle editor assembly reload
+            if ( _instance == null )
+                _instance = this;
         }
 
         private void OnDestroy()

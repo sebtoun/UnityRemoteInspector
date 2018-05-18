@@ -1,4 +1,4 @@
-﻿namespace RemoteInspector
+﻿namespace RemoteInspector.Server
 {
     public static class MimeTypes
     {
