@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography;
 using UnityEditor;
+using UnityEngine;
 
 namespace RemoteInspector.Editor
 {
@@ -9,11 +9,13 @@ namespace RemoteInspector.Editor
         [ NonSerialized ]
         private RemoteInspectorServer _server;
 
+        private bool _serverStarted;
+
         private bool IsServerRunning
         {
             get { return _server != null && _server.IsRunning; }
         }
-        
+
         [ MenuItem( "Window/Remote Inspector" ) ]
         private static void Init()
         {
@@ -22,72 +24,46 @@ namespace RemoteInspector.Editor
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField( "Remote Inspector " + ( IsServerRunning ? "is running" : "is not running" ) );
+            EditorGUILayout.LabelField( "Server " + ( IsServerRunning ? "is running" : "is not running" ) );
+            if ( IsServerRunning )
+            {
+                if ( GUILayout.Button( "Stop Server" ) )
+                {
+                    _serverStarted = false;
+                    StopServer();
+                }
+            }
+            else
+            {
+                if ( GUILayout.Button( "Start Server" ) )
+                {
+                    _serverStarted = true;
+                    StartServer();
+                }
+            }
         }
 
         private void OnEnable()
         {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-            AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
-            AssemblyReloadEvents.afterAssemblyReload += OnAfterAssemblyReload;
-        }
-
-        private void OnDisable()
-        {
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-            AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
-            AssemblyReloadEvents.afterAssemblyReload -= OnAfterAssemblyReload;
-            if ( IsServerRunning )
-            {
-                StopServer();
-            }
-        }
-
-        private void OnPlayModeStateChanged( PlayModeStateChange state )
-        {
-            switch ( state )
-            {
-                case PlayModeStateChange.EnteredPlayMode:
-                    StartServer();
-                    break;
-                case PlayModeStateChange.ExitingPlayMode:
-                    StopServer();
-                    break;
-                case PlayModeStateChange.EnteredEditMode:
-                case PlayModeStateChange.ExitingEditMode:
-                default:
-                    // do nothing
-                    break;
-            }
-        }
-
-        private void OnAfterAssemblyReload()
-        {
-            InitializeServer();
-            if ( EditorApplication.isPlaying )
+            if ( _serverStarted )
             {
                 StartServer();
             }
         }
 
-        private void OnBeforeAssemblyReload()
+        private void OnDisable()
         {
-            if ( EditorApplication.isPlaying )
+            if ( IsServerRunning )
             {
                 StopServer();
-            }
+            }            
         }
-
-        private void InitializeServer()
-        {
-            _server = new RemoteInspectorServer();
-        }        
 
         private void StartServer()
         {
             if ( _server == null )
             {
-                InitializeServer();
+                _server = new RemoteInspectorServer();
             }
 
             _server.Start();

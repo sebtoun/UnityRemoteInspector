@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -39,6 +41,13 @@ namespace RemoteInspector
 
         private void ProcessApiCall( HttpListenerRequest request, HttpListenerResponse response )
         {
+            foreach ( string header in request.Headers )
+            {
+                Debug.Log( header );
+            }
+
+            Debug.Log( request.ContentLength64 );
+            Debug.Log( new StreamReader( request.InputStream ).ReadToEnd() );
             response.Send( HttpStatusCode.NotImplemented );
         }
     }

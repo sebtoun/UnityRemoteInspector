@@ -89,9 +89,7 @@ namespace RemoteInspector
         {
             if ( !Exists() )
             {
-                Debug.LogWarning( "Creating GameObject UnityMainThreadDispatcher" );
-                new GameObject( "Main Thread Dispatcher", typeof( UnityMainThreadDispatcher ) );
-                //throw new Exception ("UnityMainThreadDispatcher could not find the UnityMainThreadDispatcher object. Please ensure you have added the MainThreadExecutor Prefab to your scene.");
+                throw new Exception ("UnityMainThreadDispatcher could not find the UnityMainThreadDispatcher object. Please ensure you have added the MainThreadExecutor Prefab to your scene.");
             }
 
             return _instance;
