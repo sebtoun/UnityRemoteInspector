@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Mustachio</name>
+    </assembly>
+    <members>
+        <member name="M:Mustachio.ContextObject.Exists">
+            <summary>
+            Determines if the value of this context exists.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:Mustachio.ContextObject._printableTypes">
+            <summary>
+            The set of allowed types that may be printed. Complex types (such as arrays and dictionaries) 
+            should not be printed, or their printing should be specialized.
+            </summary>
+        </member>
+        <member name="T:Mustachio.ExtendedParseInformation">
+            <summary>
+            Provided when parsing a template and getting information about the embedded variables.
+            </summary>
+        </member>
+        <member name="T:Mustachio.InferredTemplateModel">
+            <summary>
+            Records elements used in a model, and allowing a 
+            simple JSON model to be produced for testing.
+            </summary>
+        </member>
+        <member name="T:Mustachio.InferredTemplateModel.UsedAs">
+            <summary>
+            Allows us to capture how each path is used in a template.
+            </summary>
+        </member>
+        <member name="P:Mustachio.ParsingOptions.DisableContentSafety">
+            <summary>
+            If this is true, all values will be rendered without being HTML-encoded. (regardless of using {{{ }}} or {{ }} syntax)
+            </summary>
+        </member>
+        <member name="T:Mustachio.Parser">
+            <summary>
+            The main entry point for this library. Use the static "Parse" methods to create template functions.
+            Functions are safe for reuse, so you may parse and cache the resulting function.
+            </summary>
+        </member>
+        <member name="M:Mustachio.Parser.Parse(System.String,System.Boolean)">
+            <summary>
+            Parse the template content, producing a function that can be used to apply variables to the template. 
+            The provided function can be reused (i.e. no state will "leak" from one application of the function to the next).
+            </summary>
+            <param name="template">The content of the template to be parsed.</param>
+            <param name="disableContentEscaping">In some cases, content should not be escaped (such as when rendering text bodies and subjects in emails). 
+            By default, we use content escaping, but this parameter allows it to be disabled.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Mustachio.Parser.ParseWithModelInference(System.String,System.Boolean)">
+            <summary>
+            Parse the template, and capture paths used in the template to determine a suitable structure for the required model.
+            </summary>
+            <param name="templateSource">The template content to parse.</param>
+            <param name="disableContentEscaping">In some cases, content should not be escaped (such as when rendering text bodies and subjects in emails). 
+            By default, we use content escaping, but this parameter allows it to be disabled.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Mustachio.IndexedParseException">
+            <summary>
+            Indicates a parse error including line and character info. 
+            </summary>
+        </member>
+        <member name="T:Mustachio.Tokenizer">
+            <summary>
+            Reads in a mustache template and lexes it into tokens.
+            </summary>
+            <exception cref="T:Mustachio.IndexedParseException"></exception>
+        </member>
+        <member name="F:Mustachio.Tokenizer._negativePathSpec">
+            <summary>
+            Specifies combnations of paths that don't work.
+            </summary>
+        </member>
+        <member name="T:Mustachio.TokenType">
+            <summary>
+            The type of token produced in the lexing stage of template compilation.
+            </summary>
+        </member>
+        <member name="T:Mustachio.TokenPair">
+            <summary>
+            The token that has been lexed out of template content.
+            </summary>
+        </member>
+    </members>
+</doc>

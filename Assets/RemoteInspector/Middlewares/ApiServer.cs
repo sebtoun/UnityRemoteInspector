@@ -11,6 +11,7 @@ namespace RemoteInspector.Server
             Debug.Log( relativePath );
             
             Debug.Log( request.ContentLength64 );
+            Debug.Log( request.ContentType );
             Debug.Log( new StreamReader( request.InputStream ).ReadToEnd() );
             
             return false;

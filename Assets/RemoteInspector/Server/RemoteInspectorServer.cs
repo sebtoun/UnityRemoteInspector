@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using WebSocketSharp.Net;
 using WebSocketSharp.Server;
 
 namespace RemoteInspector.Server
 {
     public class RemoteInspectorServer : IDisposable
     {
+        private readonly List<Middleware> _middlewares = new List<Middleware>();
+
         private const string LogPrefix = "[RemoteInspector] ";
 
         private readonly HttpServer _server;
-
-        private readonly RequestsProcessor _requestsProcessor = new RequestsProcessor();
 
         public bool IsRunning
         {
@@ -24,6 +26,16 @@ namespace RemoteInspector.Server
             _server.ReuseAddress = true;
             _server.OnGet += HandleRequest;
             _server.OnPost += HandleRequest;
+        }
+
+        public void Use( string path, IRequestHandler handler )
+        {
+            _middlewares.Add( new Middleware( path, handler ) );
+        }
+
+        public void Use( string path, Func<HttpListenerRequest, HttpListenerResponse, string, bool> handler )
+        {
+            Use( path, new RequestHandlerDelegate( handler ) );
         }
 
         public void Start()
@@ -80,14 +92,30 @@ namespace RemoteInspector.Server
         {
             var request = eventArgs.Request;
             var response = eventArgs.Response;
+            var path = ServerUtility.UrlDecode( request.Url.AbsolutePath );
 
             try
             {
-                _requestsProcessor.ProcessRequest( request, response );
+                var handled = false;
+                foreach ( var middleware in _middlewares )
+                {
+                    if ( path.StartsWith( middleware.MountPoint ) )
+                    {
+                        handled = middleware.Handler.HandleRequest( request, response,
+                            path.Substring( middleware.MountPoint.Length ) );
+                        if ( handled ) break;
+                    }
+                }
+
+                if ( !handled )
+                {
+                    response.Send( HttpStatusCode.NotFound );
+                }
             }
             catch ( Exception exception )
             {
-                LogException( exception );                
+                LogException( exception );
+                response.SendException( exception );
             }
         }
 
@@ -116,6 +144,18 @@ namespace RemoteInspector.Server
             }
 
             Debug.LogException( e );
+        }
+
+        private struct Middleware
+        {
+            public readonly string MountPoint;
+            public readonly IRequestHandler Handler;
+
+            public Middleware( string mountPoint, IRequestHandler handler )
+            {
+                MountPoint = mountPoint;
+                Handler = handler;
+            }
         }
     }
 }

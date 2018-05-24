@@ -4,7 +4,6 @@ namespace RemoteInspector.Server
 {
     public class StaticFileServer : IRequestHandler
     {
-        private const string InterfaceEntryPoint = "index.html";
         private readonly string _root;
 
         public StaticFileServer( string root )
@@ -19,13 +18,12 @@ namespace RemoteInspector.Server
                 return false;
             }
 
-            var path = relativePath;
-            if ( path == "" )
+            if ( relativePath == "" )
             {
-                path += InterfaceEntryPoint;
+                return false;
             }
 
-            path = _root + "/" + path;
+            var path = _root + "/" + relativePath;
 
             var contentType = GuessContentTypeForPath( path );
             byte[] content = null;

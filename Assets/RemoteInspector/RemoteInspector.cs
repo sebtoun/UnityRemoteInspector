@@ -1,4 +1,5 @@
-﻿using RemoteInspector.Server;
+﻿using System.Collections.Generic;
+using RemoteInspector.Server;
 using UnityEngine;
 
 namespace RemoteInspector
@@ -8,6 +9,46 @@ namespace RemoteInspector
         public int ServerPort = 8080;
 
         private RemoteInspectorServer _server;
+
+        private IViewEngine _viewEngine;
+
+        private void InitServer()
+        {
+            _server = new RemoteInspectorServer( (ushort) ServerPort );
+
+            _viewEngine = new MustachioViewEngine( "Views" );
+
+            _server.Use( "/api/", new ApiServer() );
+
+            _server.Use( "/", ( request, response, relativePath ) =>
+            {
+                const string indexViewPath = "index.html";
+
+                if ( relativePath != "" )
+                {
+                    return false;
+                }
+
+                try
+                {
+                    var context = new Dictionary<string, object>()
+                    {
+                        { "content", "Hey!" }
+                    };
+
+                    var content = _viewEngine.Render( indexViewPath, context );
+                    response.Send( content, MimeTypes.Text.Html );
+                    return true;
+                }
+                catch ( ViewNotFoundException )
+                {
+                    RemoteInspectorServer.LogError( "Main interface view not found" );
+                    return false;
+                }
+            } );
+
+            _server.Use( "/", new StaticFileServer( "Assets" ) );
+        }
 
         private void OnEnable()
         {
@@ -23,7 +64,7 @@ namespace RemoteInspector
         {
             if ( _server == null )
             {
-                _server = new RemoteInspectorServer( (ushort) ServerPort );
+                InitServer();
             }
 
             _server.Start();

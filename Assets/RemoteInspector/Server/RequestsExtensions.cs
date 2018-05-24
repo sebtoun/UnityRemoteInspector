@@ -81,36 +81,5 @@ namespace RemoteInspector.Server
             Send( response, content: exception.Message + "\n" + exception.StackTrace,
                 code: HttpStatusCode.InternalServerError );
         }
-
-        public static void SendFile( this HttpListenerResponse response, string path, string contentType,
-            bool sendChunked = false )
-        {
-            if ( contentType.StartsWith( "text/" ) )
-            {
-                try
-                {
-                    var contentString = ResourceLoader.GetTextFileContent( path );
-                    Send( response, contentString, contentType, sendChunked: sendChunked );
-                }
-                catch ( ResourceNotFoundException )
-                {
-                    RemoteInspectorServer.LogWarning( "Resource not found : " + path );
-                    Send( response, HttpStatusCode.NotFound );
-                }
-            }
-            else
-            {
-                try
-                {
-                    var contentBinary = ResourceLoader.GetBinaryFileContent( path );
-                    Send( response, contentBinary, contentType, sendChunked: sendChunked );
-                }
-                catch ( ResourceNotFoundException )
-                {
-                    RemoteInspectorServer.LogWarning( "Resource not found : " + path );
-                    Send( response, HttpStatusCode.NotFound );
-                }
-            }
-        }
     }
 }
