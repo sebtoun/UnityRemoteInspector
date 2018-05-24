@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RemoteInspector.Middlewares;
 using RemoteInspector.Server;
 using UnityEngine;
 
@@ -48,6 +49,14 @@ namespace RemoteInspector
             } );
 
             _server.Use( "/", new StaticFileServer( "Assets" ) );
+            
+//            _server.Use( "/", ( request, response, relativePath ) =>
+//            {
+//                var url = request.Url.GetLeftPart( UriPartial.Authority ) + "/";
+//                response.Redirect( url );
+//                response.Close();
+//                return true;
+//            } );
         }
 
         private void OnEnable()

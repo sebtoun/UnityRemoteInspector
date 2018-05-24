@@ -1,6 +1,7 @@
-﻿using WebSocketSharp.Net;
+﻿using RemoteInspector.Server;
+using WebSocketSharp.Net;
 
-namespace RemoteInspector.Server
+namespace RemoteInspector.Middlewares
 {
     public class StaticFileServer : IRequestHandler
     {

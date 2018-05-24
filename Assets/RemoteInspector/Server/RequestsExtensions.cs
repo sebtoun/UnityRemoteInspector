@@ -81,5 +81,23 @@ namespace RemoteInspector.Server
             Send( response, content: exception.Message + "\n" + exception.StackTrace,
                 code: HttpStatusCode.InternalServerError );
         }
+
+//        public static void Redirect( this HttpListenerResponse response, Uri url )
+//        {
+//            Redirect( response, url.ToString() );
+//        }
+//
+//        public static void Redirect( this HttpListenerResponse response, string path )
+//        {
+//            try
+//            {
+//                PrepareResponse( response, HttpStatusCode.Found );
+//                response.AddHeader( "Location", path );
+//            }
+//            finally
+//            {
+//                response.Close();
+//            }
+//        }
     }
 }

@@ -1,6 +1,10 @@
 ﻿/*
 Copyright 2015 Pim de Witte All Rights Reserved.
 
+modified by Sébastien Andary:
+- handle assembly reload in editor
+- add EnqueueAndWait method to enqueue a task and block calling thread until task execution by Unity main thread is complete 
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -31,8 +35,6 @@ namespace RemoteInspector
     public class UnityMainThreadDispatcher : MonoBehaviour
     {
         private static readonly Queue<Action> ExecutionQueue = new Queue<Action>();
-        
-//        private static readonly Queue<Func<object>> ExecutionWithCallbackQueue = new Queue<Func<object>>();
 
         public void Update()
         {
@@ -43,14 +45,6 @@ namespace RemoteInspector
                     ExecutionQueue.Dequeue().Invoke();
                 }
             }
-
-//            lock ( ExecutionWithCallbackQueue )
-//            {
-//                while ( ExecutionWithCallbackQueue.Count > 0 )
-//                {
-//                    ExecutionWithCallbackQueue.Dequeue().Invoke();
-//                }
-//            }
         }
 
         /// <summary>
@@ -74,6 +68,11 @@ namespace RemoteInspector
             Enqueue( ActionWrapper( action ) );
         }
 
+        /// <summary>
+        /// Locks the queue and adds the Action to the queue. This method blocks the calling thread until the Action
+        /// has been executed byt Unity main thread.
+        /// </summary>
+        /// <param name="action">function that will be executed from the main thread.</param>
         public void EnqueueAndWait( Action action )
         {
             using ( var waitHandle = new ManualResetEvent( false ) )

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using RemoteInspector.Server;
 
-namespace RemoteInspector
+namespace RemoteInspector.Middlewares
 {
     public class MustachioViewEngine : IViewEngine
     {
