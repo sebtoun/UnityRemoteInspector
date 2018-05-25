@@ -19,12 +19,12 @@ namespace RemoteInspector.Middlewares
                 return false;
             }
 
-            if ( relativePath == "" )
+            if ( relativePath == "/" )
             {
                 return false;
             }
 
-            var path = _root + "/" + relativePath;
+            var path = _root + relativePath;
 
             var contentType = GuessContentTypeForPath( path );
             byte[] content = null;
@@ -37,7 +37,7 @@ namespace RemoteInspector.Middlewares
                 }
                 catch ( ResourceNotFoundException )
                 {
-                    RemoteInspectorServer.LogWarning( "Resource not found : " + path );
+                    MiddlewareServer.LogWarning( "Resource not found : " + path );
                 }
             } );
 

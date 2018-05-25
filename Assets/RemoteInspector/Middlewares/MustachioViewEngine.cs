@@ -43,7 +43,7 @@ namespace RemoteInspector.Middlewares
                 }
                 catch ( ResourceNotFoundException )
                 {
-                    RemoteInspectorServer.LogWarning( "View not found : " + path );
+                    MiddlewareServer.LogWarning( "View not found : " + path );
                 }
             } );
 

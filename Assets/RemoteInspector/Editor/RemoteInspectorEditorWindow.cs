@@ -10,7 +10,7 @@ namespace RemoteInspector.Editor
         public int ServerPort = 8080;
 
         [ NonSerialized ]
-        private RemoteInspectorServer _server;
+        private MiddlewareServer _server;
 
         private bool _serverStarted;
 
