@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace RemoteInspector.Server
@@ -9,7 +10,8 @@ namespace RemoteInspector.Server
     public static class ServerUtility
     {
         private static Dictionary<string, char> _entities;
-        private static object _sync = new object();
+        private static readonly char[] _hexChars = "0123456789abcdef".ToCharArray();
+        private static readonly object _sync = new object();
 
         /// <summary>
         /// Decodes an HTML-encoded <see cref="string"/> and returns the decoded <see cref="string"/>.
@@ -204,6 +206,137 @@ namespace RemoteInspector.Server
             }
 
             return encoding.GetString( buff.ToArray() );
+        }
+
+        public static string UrlEncode( string s )
+        {
+            return UrlEncode( s, Encoding.UTF8 );
+        }
+
+        public static string UrlEncode( string s, Encoding encoding )
+        {
+            int len;
+            if ( s == null || ( len = s.Length ) == 0 )
+                return s;
+
+            var needEncode = false;
+            foreach ( var c in s )
+            {
+                if ( ( c < '0' ) || ( c < 'A' && c > '9' ) || ( c > 'Z' && c < 'a' ) || ( c > 'z' ) )
+                {
+                    if ( notEncoded( c ) )
+                        continue;
+
+                    needEncode = true;
+                    break;
+                }
+            }
+
+            if ( !needEncode )
+                return s;
+
+            if ( encoding == null )
+                encoding = Encoding.UTF8;
+
+            // Avoided GetByteCount call.
+            var bytes = new byte[ encoding.GetMaxByteCount( len ) ];
+            var realLen = encoding.GetBytes( s, 0, len, bytes, 0 );
+
+            return Encoding.ASCII.GetString( InternalUrlEncodeToBytes( bytes, 0, realLen ) );
+        }
+
+        private static byte[] InternalUrlEncodeToBytes( byte[] bytes, int offset, int count )
+        {
+            using ( var res = new MemoryStream() )
+            {
+                var end = offset + count;
+                for ( var i = offset; i < end; i++ )
+                    urlEncode( (char) bytes[ i ], res, false );
+
+                res.Close();
+                return res.ToArray();
+            }
+        }
+
+        private static void urlEncode( char c, Stream result, bool unicode )
+        {
+            if ( c > 255 )
+            {
+                // FIXME: What happens when there is an internal error?
+                //if (!unicode)
+                //  throw new ArgumentOutOfRangeException ("c", c, "Greater than 255.");
+
+                result.WriteByte( (byte) '%' );
+                result.WriteByte( (byte) 'u' );
+
+                var i = (int) c;
+                var idx = i >> 12;
+                result.WriteByte( (byte) _hexChars[ idx ] );
+
+                idx = ( i >> 8 ) & 0x0F;
+                result.WriteByte( (byte) _hexChars[ idx ] );
+
+                idx = ( i >> 4 ) & 0x0F;
+                result.WriteByte( (byte) _hexChars[ idx ] );
+
+                idx = i & 0x0F;
+                result.WriteByte( (byte) _hexChars[ idx ] );
+
+                return;
+            }
+
+            if ( c > ' ' && notEncoded( c ) )
+            {
+                result.WriteByte( (byte) c );
+                return;
+            }
+
+            if ( c == ' ' )
+            {
+                result.WriteByte( (byte) '+' );
+                return;
+            }
+
+            if ( ( c < '0' ) ||
+                 ( c < 'A' && c > '9' ) ||
+                 ( c > 'Z' && c < 'a' ) ||
+                 ( c > 'z' ) )
+            {
+                if ( unicode && c > 127 )
+                {
+                    result.WriteByte( (byte) '%' );
+                    result.WriteByte( (byte) 'u' );
+                    result.WriteByte( (byte) '0' );
+                    result.WriteByte( (byte) '0' );
+                }
+                else
+                {
+                    result.WriteByte( (byte) '%' );
+                }
+
+                var i = (int) c;
+                var idx = i >> 4;
+                result.WriteByte( (byte) _hexChars[ idx ] );
+
+                idx = i & 0x0F;
+                result.WriteByte( (byte) _hexChars[ idx ] );
+
+                return;
+            }
+
+            result.WriteByte( (byte) c );
+        }
+
+        private static bool notEncoded( char c )
+        {
+            return c == '!' ||
+                   c == '\'' ||
+                   c == '(' ||
+                   c == ')' ||
+                   c == '*' ||
+                   c == '-' ||
+                   c == '.' ||
+                   c == '_';
         }
 
         private static int getChar( string s, int offset, int length )

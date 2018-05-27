@@ -7,24 +7,30 @@ namespace RemoteInspector.Middlewares
     public class MustachioViewEngine : IViewEngine
     {
         private readonly string _templatesRoot;
+        private bool _cacheSources;
 
-        private readonly Dictionary<string, Func<IDictionary<string, object>, string>> _cachedTemplates = new Dictionary<string, Func<IDictionary<string, object>, string>>();
+        private readonly Dictionary<string, Func<IDictionary<string, object>, string>> _cachedTemplates =
+            new Dictionary<string, Func<IDictionary<string, object>, string>>();
 
-        public MustachioViewEngine( string rootPath )
+        public MustachioViewEngine( string rootPath, bool cacheSources = false )
         {
             _templatesRoot = rootPath;
+            _cacheSources = cacheSources;
         }
 
         public string Render( string path, IDictionary<string, object> context )
         {
             Func<IDictionary<string, object>, string> template;
-            if ( !_cachedTemplates.TryGetValue( path, out template ) )
+            if ( !_cacheSources || !_cachedTemplates.TryGetValue( path, out template ) )
             {
                 var sourceTemplate = GetSourceTemplate( path );
 
                 template = Mustachio.Parser.Parse( sourceTemplate );
                 
-                _cachedTemplates.Add( path, template );
+                if ( _cacheSources )
+                {
+                    _cachedTemplates.Add( path, template );
+                }
             }
 
             return template( context );

@@ -30,7 +30,12 @@ namespace RemoteInspector.Server
             _server.OnDelete += HandleRequest;
         }
 
-        
+        public void Use<TWsService>( string path, Action<TWsService> initializer = null )
+            where TWsService : WebSocketBehavior, new()
+        {
+            _server.AddWebSocketService( path, initializer );
+        }
+
         public void Use( IRequestHandler handler )
         {
             Use( "", handler );
@@ -116,7 +121,7 @@ namespace RemoteInspector.Server
                     {
                         var relativePath = path.Substring( middleware.MountPoint.Length );
                         if ( relativePath != "" && relativePath[ 0 ] != '/' ) continue;
-                        
+
                         handled = middleware.Handler.HandleRequest( request, response, relativePath );
                         if ( handled ) break;
                     }

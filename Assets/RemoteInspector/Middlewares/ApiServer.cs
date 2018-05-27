@@ -1,20 +1,16 @@
-﻿using System.IO;
-using UnityEngine;
-using WebSocketSharp.Net;
+﻿using RemoteInspector.Server;
+using WebSocketSharp;
+using WebSocketSharp.Server;
 
-namespace RemoteInspector.Server
+namespace RemoteInspector.Middlewares
 {
-    public class ApiServer : IRequestHandler
+    public class ApiServer : WebSocketBehavior
     {
-        public bool HandleRequest( HttpListenerRequest request, HttpListenerResponse response, string relativePath )
+        protected override void OnMessage( MessageEventArgs e )
         {
-            Debug.Log( relativePath );
-            
-            Debug.Log( request.ContentLength64 );
-            Debug.Log( request.ContentType );
-            Debug.Log( new StreamReader( request.InputStream ).ReadToEnd() );
-            
-            return false;
+            base.OnMessage( e );
+            MiddlewareServer.Log( e.Data );
+            Send( e.Data );
         }
     }
 }

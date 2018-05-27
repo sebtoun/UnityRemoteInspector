@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace RemoteInspector.Middlewares
+namespace RemoteInspector
 {
     public static class ResourceLoader
     {

@@ -79,9 +79,19 @@ namespace RemoteInspector
             {
                 Enqueue( () =>
                 {
-                    action();
-                    // ReSharper disable once AccessToDisposedClosure
-                    waitHandle.Set();
+                    try
+                    {
+                        action();
+                    }
+                    catch ( Exception exception )
+                    {
+                        Debug.LogException( exception );
+                    }
+                    finally
+                    {
+                        // ReSharper disable once AccessToDisposedClosure
+                        waitHandle.Set();
+                    }
                 } );
                 waitHandle.WaitOne();
             }
@@ -104,7 +114,8 @@ namespace RemoteInspector
         {
             if ( !Exists() )
             {
-                throw new Exception ("UnityMainThreadDispatcher could not find the UnityMainThreadDispatcher object. Please ensure you have added the MainThreadExecutor Prefab to your scene.");
+                throw new Exception(
+                    "UnityMainThreadDispatcher could not find the UnityMainThreadDispatcher object. Please ensure you have added the MainThreadExecutor Prefab to your scene." );
             }
 
             return _instance;
