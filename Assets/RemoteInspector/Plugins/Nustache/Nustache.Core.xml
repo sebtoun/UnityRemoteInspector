@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nustache.Core</name>
+    </assembly>
+    <members>
+        <member name="T:Nustache.Core.JValueIdentifier">
+            <summary>
+              Service resonsible for identifying whether a value is a <see cref="!:Newtonsoft.Json.Linq.JValue" />, determining its
+              type and returns its value.
+            </summary>
+        </member>
+        <member name="M:Nustache.Core.JValueIdentifier.IsJValue(System.Object)">
+            <summary>
+              Determines whether the <paramref name="obj" /> is a <see cref="!:Newtonsoft.Json.Linq.JValue" />.
+            </summary>
+            <param name="obj">
+              The <see cref="T:System.Object" /> retrieved from the model.
+            </param>
+            <returns>
+              <see langword="True" /> whether the <paramref name="obj" /> is a <see cref="!:Newtonsoft.Json.Linq.JValue" /> object
+              otherwise <see langword="False" />.
+            </returns>
+        </member>
+        <member name="M:Nustache.Core.JValueIdentifier.GetValue(System.Object)">
+            <summary>
+              Returns the value of the <see cref="!:Newtonsoft.Json.Linq.JValue" /> object.
+            </summary>
+            <param name="jValue">
+              The <see cref="T:System.Object" /> retrieved from the model.
+            </param>
+            <returns>
+              A native value determined by the <see cref="T:System.Type"/> returned by the property Type of <see cref="!:Newtonsoft.Json.Linq.JValue" />.
+            </returns>
+        </member>
+        <member name="M:Nustache.Core.Template.Load(System.IO.TextReader)">
+            <summary>
+            Loads the template.
+            </summary>
+            <param name="reader">The object to read the template from.</param>
+            <remarks>
+            The <paramref name="reader" /> is read until it ends, but is not
+            closed or disposed.
+            </remarks>
+            <exception cref="T:Nustache.Core.NustacheException">
+            Thrown when the template contains a syntax error.
+            </exception>
+        </member>
+        <member name="M:Nustache.Core.Template.Render(System.Object,System.IO.TextWriter,Nustache.Core.TemplateLocator)">
+            <summary>
+            Renders the template.
+            </summary>
+            <param name="data">The data to use to render the template.</param>
+            <param name="writer">The object to write the output to.</param>
+            <param name="templateLocator">The delegate to use to locate templates for inclusion.</param>
+            <remarks>
+            The <paramref name="writer" /> is flushed, but not closed or disposed.
+            </remarks>
+        </member>
+        <member name="M:Nustache.Core.ValueGetterFactory.GetValueGetter(System.Object,System.Type,System.String)">
+            <param name="target">Can be null if we're compiling.</param>
+        </member>
+    </members>
+</doc>

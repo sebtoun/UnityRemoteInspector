@@ -1,24 +1,5 @@
-var socket = null;
-try {
-    socket = new WebSocket("ws://localhost:8080/api");                   
-} catch (exception) {
-    console.error(exception);
-}
+const inspectorElement = document.getElementById("inspector");
 
-socket.onerror = function(error) {
-    console.error(error);
-};
+const list = inspectorElement.querySelector("ul");
 
-socket.onopen = function(event) {
-    console.log("Connexion établie.");
-
-    this.onclose = function(event) {
-        console.log("Connexion terminé.");
-    };
-
-    this.onmessage = function(event) {
-        console.log("Message:", event.data);
-    };
-
-    this.send("Hello world!");
-};
+fetch("")

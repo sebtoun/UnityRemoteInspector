@@ -6,24 +6,35 @@
     <title>Unity Remote Inspector</title>
 </head>
 <body>
+    <h1>
+        GameObject: <a href="/">root</a>/{{#parents}}<a href="./{{path}}">{{name}}</a>/{{/parents}}
+    </h1>
+
     <div>
-        <h1>
-            GameObject: <a href="/">root</a>/{{#each parents}}<a href="./{{path}}">{{name}}</a>/{{/each}}
-        </h1>
-        <p>Childrens:</p>
+        <h2>Childrens</h2>
         <ul>
-            {{#each childrens}}
+            {{#childrens}}
             <li id="{{id}}"><a href="./{{path}}">{{name}}</a></li>
-            {{/each}}
+            {{/childrens}}
         </ul>
     </div>
     <div>
-    <p>Components:</p>
-    <ul>
-        {{#each components}}
-            <li id="{{id}}"><a href="#{{name}}">{{name}}</a></li>
-        {{/each}}
-    </ul>
+        <h2>Components</h2>
+        <ul>
+            {{#components}}
+            <li id="{{id}}"><a href="?id={{id}}">{{name}}</a></li>
+            {{/components}}
+        </ul>
+    </div>
+    <div id="inspector">
+        <h2>Inspector</h2>
+        <ul>
+            {{#componentDetails}}
+            {{#properties}}
+            <li id="{{../id}}-{{name}}">{{name}} = {{value}}</li>
+            {{/properties}}
+            {{/componentDetails}}
+        </ul>
     </div>
 </body>
 <script src="main.js"></script>

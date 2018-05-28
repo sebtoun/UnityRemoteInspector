@@ -8,7 +8,7 @@ namespace RemoteInspector
         public static string FullPath( this Transform tr )
         {
             var path = tr.name;
-            while ( (tr = tr.parent) != null )
+            while ( ( tr = tr.parent ) != null )
             {
                 path = tr.name + "/" + path;
             }
@@ -19,7 +19,7 @@ namespace RemoteInspector
         public static IEnumerable<Transform> WalkUpwards( this Transform tr )
         {
             yield return tr;
-            while ( (tr = tr.parent) != null )
+            while ( ( tr = tr.parent ) != null )
             {
                 yield return tr;
             }

@@ -1,42 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RemoteInspector.Server;
 
 namespace RemoteInspector.Middlewares
 {
-    public class MustachioViewEngine : IViewEngine
+    public abstract class ViewEngineBase<TTemplate> : IViewEngine
     {
-        private readonly string _templatesRoot;
-        private bool _cacheSources;
+        private string _templatesRoot;
 
-        private readonly Dictionary<string, Func<IDictionary<string, object>, string>> _cachedTemplates =
-            new Dictionary<string, Func<IDictionary<string, object>, string>>();
+        private readonly bool _cacheSources;
 
-        public MustachioViewEngine( string rootPath, bool cacheSources = false )
+        private readonly Dictionary<string, TTemplate> _cachedTemplates = new Dictionary<string, TTemplate>();
+
+        protected ViewEngineBase( string rootPath, bool cacheSources = false )
         {
             _templatesRoot = rootPath;
             _cacheSources = cacheSources;
         }
 
-        public string Render( string path, IDictionary<string, object> context )
+        public virtual string Render( string path, IDictionary<string, object> context )
         {
-            Func<IDictionary<string, object>, string> template;
+            return ApplyTemplate( GetTemplate( path ), context );
+        }
+
+        protected abstract string ApplyTemplate( TTemplate template, IDictionary<string, object> context );
+
+        protected abstract TTemplate CreateTemplate( string templateSource );
+
+        protected TTemplate GetTemplate( string path )
+        {
+            TTemplate template;
             if ( !_cacheSources || !_cachedTemplates.TryGetValue( path, out template ) )
             {
                 var sourceTemplate = GetSourceTemplate( path );
 
-                template = Mustachio.Parser.Parse( sourceTemplate );
-                
+                template = CreateTemplate( sourceTemplate );
+
                 if ( _cacheSources )
                 {
                     _cachedTemplates.Add( path, template );
                 }
             }
 
-            return template( context );
+            return template;
         }
 
-        private string GetSourceTemplate( string path )
+        protected string GetSourceTemplate( string path )
         {
             path = _templatesRoot + "/" + path;
 

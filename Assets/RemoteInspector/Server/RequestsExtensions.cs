@@ -73,7 +73,14 @@ namespace RemoteInspector.Server
 
         public static void SendJson( this HttpListenerResponse response, object obj )
         {
-            Send( response, content: JsonConvert.SerializeObject( obj ), contentType: MimeTypes.Application.Json );
+            var content = JsonConvert.SerializeObject( obj, Formatting.Indented,
+                new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    ContractResolver = new IgnorePropertiesContractResolver()
+                } );
+            Send( response, content: content, contentType: MimeTypes.Application.Json );
         }
 
         public static void SendException( this HttpListenerResponse response, Exception exception )
