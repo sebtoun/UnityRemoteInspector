@@ -22,7 +22,7 @@
         <h2>Components</h2>
         <ul>
             {{#components}}
-            <li id="{{id}}"><a href="?id={{id}}">{{name}}</a></li>
+            <li id="{{id}}"><a href="./{{path}}">{{name}}</a></li>
             {{/components}}
         </ul>
     </div>
@@ -31,7 +31,7 @@
         <ul>
             {{#componentDetails}}
             {{#properties}}
-            <li id="{{../id}}-{{name}}">{{name}} = {{value}}</li>
+            <li id="{{self.id}}-{{name}}">{{name}} = {{value}}</li>
             {{/properties}}
             {{/componentDetails}}
         </ul>

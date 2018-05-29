@@ -42,17 +42,20 @@ namespace RemoteInspector
         {
             var content = new Dictionary<string, object>();
 
-            content[ "name" ] = "_root_";
-            content[ "id" ] = 0;
-            content[ "path" ] = "";
+            content[ "self" ] = new RemoteReference()
+            {
+                name = "_root_",
+                id = 0,
+                path = ""
+            };
 
             content[ "childrens" ] = ListChildren().Select( go =>
             {
-                return new Dictionary<string, object>()
+                return new RemoteReference()
                 {
-                    { "id", go.GetInstanceID() },
-                    { "name", go.name },
-                    { "path", go.transform.FullPath() }
+                    id = go.GetInstanceID(),
+                    name = go.name,
+                    path = go.transform.FullPath()
                 };
             } ).ToArray();
 
@@ -62,19 +65,23 @@ namespace RemoteInspector
         public static Dictionary<string, object> CreateRemoteView( Component component )
         {
             var result = new Dictionary<string, object>();
-            
-            result[ "id" ] = component.GetInstanceID();
-            result[ "name" ] = component.name;
-            result[ "path" ] = component.transform.FullPath();
-            List<Dictionary<string, object>> properties;
-            result["properties"] = properties = new List<Dictionary<string, object>>();
+
+            result[ "self" ] = new RemoteReference()
+            {
+                id = component.GetInstanceID(),
+                name = component.name,
+                path = component.transform.FullPath()
+            };
+
+            List<RemoteProperty> properties;
+            result[ "properties" ] = properties = new List<RemoteProperty>();
 
             foreach ( var fieldInfo in component.GetType()
                 .GetFields( BindingFlags.Instance |
                             BindingFlags.NonPublic |
                             BindingFlags.Public ) )
             {
-                if ( fieldInfo.FieldType.IsSerializable &&
+                if ( ( fieldInfo.FieldType.IsSerializable || fieldInfo.FieldType.IsValueType ) &&
                      ( fieldInfo.IsPublic &&
                        fieldInfo.GetCustomAttributes( typeof( HideInInspector ), false ).Length == 0
                        || !fieldInfo.IsPublic &&
@@ -82,11 +89,12 @@ namespace RemoteInspector
                 {
                     try
                     {
-                        properties.Add( new Dictionary<string, object>()
+                        properties.Add( new RemoteProperty()
                         {
-                            { "name", fieldInfo.Name },
-                            { "type", fieldInfo.FieldType.FullName },
-                            { "value", fieldInfo.GetValue( component ) }
+                            name = fieldInfo.Name,
+                            type = fieldInfo.FieldType.FullName,
+                            value = fieldInfo.GetValue( component ),
+                            writable = true
                         } );
                     }
                     catch ( TargetInvocationException )
@@ -99,15 +107,17 @@ namespace RemoteInspector
                 .GetProperties( BindingFlags.Instance |
                                 BindingFlags.Public ) )
             {
-                if ( propInfo.PropertyType.IsValueType && propInfo.CanRead && propInfo.GetGetMethod() != null )
+                if ( ( propInfo.PropertyType.IsValueType || propInfo.PropertyType.IsSerializable ) &&
+                     propInfo.CanRead && propInfo.GetGetMethod() != null )
                 {
                     try
                     {
-                        properties.Add( new Dictionary<string, object>()
+                        properties.Add( new RemoteProperty()
                         {
-                            { "name", propInfo.Name },
-                            { "type", propInfo.PropertyType.FullName },
-                            { "value", propInfo.GetGetMethod().Invoke( component, null ) }
+                            name = propInfo.Name,
+                            type = propInfo.PropertyType.FullName,
+                            value = propInfo.GetGetMethod().Invoke( component, null ),
+                            writable = propInfo.CanWrite && propInfo.GetSetMethod() != null
                         } );
                     }
                     catch ( TargetInvocationException e )
@@ -125,42 +135,62 @@ namespace RemoteInspector
             var content = new Dictionary<string, object>();
             var objectPath = gameObject.transform.FullPath();
 
-            content[ "name" ] = gameObject.name;
-            content[ "id" ] = gameObject.GetInstanceID();
-            content[ "path" ] = objectPath;
+            content[ "self" ] = new RemoteReference()
+            {
+                name = gameObject.name,
+                id = gameObject.GetInstanceID(),
+                path = objectPath
+            };
 
             content[ "components" ] = gameObject.GetComponents<Component>().Select( comp =>
             {
                 var id = comp.GetInstanceID();
-                return new Dictionary<string, object>()
+                return new RemoteReference()
                 {
-                    { "id", id },
-                    { "name", comp.GetType().Name },
-                    { "path", objectPath + "?id=" + id }
+                    id = id,
+                    name = comp.GetType().Name,
+                    path = objectPath + "?id=" + id
                 };
             } ).ToArray();
 
             content[ "parents" ] = gameObject.transform.WalkUpwards().Reverse().Select( tr =>
             {
-                return new Dictionary<string, object>()
+                return new RemoteReference()
                 {
-                    { "id", tr.gameObject.GetInstanceID() },
-                    { "name", tr.name },
-                    { "path", tr.FullPath() }
+                    id = tr.gameObject.GetInstanceID(),
+                    name = tr.name,
+                    path = tr.FullPath()
                 };
             } ).ToArray();
 
             content[ "childrens" ] = ListChildren( objectPath ).Select( go =>
             {
-                return new Dictionary<string, object>()
+                return new RemoteReference()
                 {
-                    { "id", go.GetInstanceID() },
-                    { "name", go.name },
-                    { "path", go.transform.FullPath() }
+                    id = go.GetInstanceID(),
+                    name = go.name,
+                    path = go.transform.FullPath()
                 };
             } ).ToArray();
 
             return content;
+        }
+
+        [ Serializable ]
+        public struct RemoteReference
+        {
+            public int id;
+            public string name;
+            public string path;
+        }
+
+        [ Serializable ]
+        public struct RemoteProperty
+        {
+            public string name;
+            public string type;
+            public object value;
+            public bool writable;
         }
     }
 

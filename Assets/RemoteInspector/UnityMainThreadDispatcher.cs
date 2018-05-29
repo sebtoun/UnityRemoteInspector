@@ -3,7 +3,8 @@ Copyright 2015 Pim de Witte All Rights Reserved.
 
 modified by Sébastien Andary:
 - handle assembly reload in editor
-- add EnqueueAndWait method to enqueue a task and block calling thread until task execution by Unity main thread is complete 
+- add EnqueueAndWait method to enqueue a task and block calling thread until task execution by Unity main thread is complete
+- remove conversion to coroutines 
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,10 +54,7 @@ namespace RemoteInspector
         /// <param name="action">IEnumerator function that will be executed from the main thread.</param>
         public void Enqueue( IEnumerator action )
         {
-            lock ( ExecutionQueue )
-            {
-                ExecutionQueue.Enqueue( () => { StartCoroutine( action ); } );
-            }
+            Enqueue( () => StartCoroutine( action ) );
         }
 
         /// <summary>
@@ -65,7 +63,10 @@ namespace RemoteInspector
         /// <param name="action">function that will be executed from the main thread.</param>
         public void Enqueue( Action action )
         {
-            Enqueue( ActionWrapper( action ) );
+            lock ( ExecutionQueue )
+            {
+                ExecutionQueue.Enqueue( action );
+            }
         }
 
         /// <summary>
@@ -97,12 +98,6 @@ namespace RemoteInspector
             }
         }
 
-        IEnumerator ActionWrapper( Action a )
-        {
-            a();
-            yield return null;
-        }
-
         private static UnityMainThreadDispatcher _instance = null;
 
         private static bool Exists()
@@ -120,7 +115,6 @@ namespace RemoteInspector
 
             return _instance;
         }
-
 
         private void Awake()
         {

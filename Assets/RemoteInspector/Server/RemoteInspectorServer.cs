@@ -73,6 +73,21 @@ namespace RemoteInspector.Server
                                     content[ "componentDetails" ] = SceneExplorer.CreateRemoteView( gameObject
                                         .GetComponents<Component>()
                                         .First( comp => comp.GetInstanceID() == componentId ) );
+                                    var properties =
+                                        (List<SceneExplorer.RemoteProperty>) ( (IDictionary<string, object>) content[
+                                            "componentDetails" ] )[ "properties" ];
+                                    for ( int i = 0; i < properties.Count; i++ )
+                                    {
+                                        var property = properties[ i ];
+                                        property.value = JsonConvert.SerializeObject( property.value,
+                                            Formatting.None, new JsonSerializerSettings
+                                            {
+                                                NullValueHandling = NullValueHandling.Ignore,
+                                                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                                                ContractResolver = new IgnorePropertiesContractResolver()
+                                            } );
+                                        properties[ i ] = property;
+                                    }
                                 }
                             }
                         }
@@ -98,14 +113,14 @@ namespace RemoteInspector.Server
                 try
                 {
                     const string viewPath = "index.html";
-                    var contentJson = JsonConvert.SerializeObject( content, Formatting.Indented, new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                        ContractResolver = new IgnorePropertiesContractResolver()
-                    } );
-
-                    var renderContext = JsonHelper.Deserialize( contentJson ) as Dictionary<string, object>;                    
+//                    var contentJson = JsonConvert.SerializeObject( content, Formatting.Indented, new JsonSerializerSettings
+//                    {
+//                        NullValueHandling = NullValueHandling.Ignore,
+//                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+//                        ContractResolver = new IgnorePropertiesContractResolver()
+//                    } );
+//
+//                    var renderContext = JsonHelper.Deserialize( contentJson ) as Dictionary<string, object>;                    
                     var responseContent = viewEngine.Render( viewPath, content );
 
                     response.Send( responseContent, MimeTypes.Text.Html );
